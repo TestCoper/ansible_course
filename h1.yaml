@@ -1,0 +1,34 @@
+---
+- name: Install Docker and run phpMyAdmin container
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure Snap is installed
+      apt:
+        name: snapd
+        state: present
+        update_cache: yes
+
+    - name: Install Docker using Snap
+      snap:
+        name: docker
+        state: present
+
+    - name: Ensure Docker service is running
+      systemd:
+        name: snap.docker.dockerd
+        state: started
+        enabled: yes
+    - name: sleep for docker
+      command: sleep 10
+    - name: Run phpMyAdmin container
+      command: >
+        docker run
+        --add-host=docker-host:172.17.0.1
+        -p 8090:80
+        -e PMA_HOST=192.168.30.4
+        -e MYSQL_ROOT_PASSWORD=CHANGEME
+        --restart unless-stopped
+        -m 2G
+        -d
+        docker.arvancloud.ir/phpmyadmin

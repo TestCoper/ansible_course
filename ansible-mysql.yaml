@@ -1,0 +1,36 @@
+---
+- name: Set up MYSQL
+  hosts: all
+  become: yes
+  vars:
+    mysql_version: "5.7"
+
+  tasks:
+    - name: Add GPG key
+      apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: B7B3B788A8D3785C
+        state: present
+
+    - name: Add MySQL 5.7 repository
+      ansible.builtin.shell: 'echo "deb-src http://repo.mysql.com/apt/ubuntu/ bionic mysql-{{ mysql_version }}\\ndeb http://repo.mysql.com/apt/ubuntu/ bionic mysql-{{ mysql_version }}\\n" > /etc/apt/sources.list.d/mysql.list'
+      args:
+        creates: /etc/apt/sources.list.d/mysql.list
+
+
+    - name: Update and upgrade apt packages
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+      tags: system_update
+
+
+    - name: Install MySQL 5.7 components
+      ansible.builtin.apt:
+        name:
+          - mysql-client={{ mysql_version }}*
+          - mysql-community-server={{ mysql_version }}*
+          - mysql-server={{ mysql_version }}*
+        state: present
+        allow_unauthenticated: true
+      tags: mysql

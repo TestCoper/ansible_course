@@ -1,0 +1,45 @@
+---
+- name: Install PHP 7.4 and Apache2
+  hosts: all
+  become: yes
+  vars:
+    php_version: "php7.4"
+  tasks:
+    - name: Update apt package index
+      apt:
+        update_cache: yes
+
+    - name: Install Apache2
+      apt:
+        name: apache2
+        state: present
+
+    - name: Add PHP repository
+      apt_repository:
+        repo: ppa:ondrej/php
+        state: present
+
+    - name: Install PHP
+      apt:
+        name:
+          - "{{ php_version }}"
+          - "{{ php_version }}-cli"
+          - "{{ php_version }}-fpm"
+          - "{{ php_version }}-mysql"
+          - "{{ php_version }}-pgsql"
+          - "{{ php_version }}-sqlite3"
+          - "{{ php_version }}-xml"
+          - "{{ php_version }}-mbstring"
+        state: present
+
+    - name: Ensure Apache2 is running
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Ensure PHP-FPM is running
+      service:
+        name: "{{ php_version }}-fpm"
+        state: started
+        enabled: yes
